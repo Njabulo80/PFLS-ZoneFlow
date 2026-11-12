@@ -1,0 +1,49 @@
+name: Build PFLS ZoneFlow APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Add current ZoneFlow dashboard to Android assets
+        run: |
+          mkdir -p app/src/main/assets
+          curl --fail --location --retry 3 \
+            https://raw.githubusercontent.com/Njabulo80/PFLS-ZoneFlow/main/index.html \
+            --output app/src/main/assets/index.html
+          test -s app/src/main/assets/index.html
+
+      - name: Build debug APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PFLS-ZoneFlow-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
