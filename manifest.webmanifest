@@ -1,0 +1,13 @@
+{
+  "id": "./",
+  "name": "Njabulo FX PFLS ZoneFlow",
+  "short_name": "ZoneFlow",
+  "description": "Independent multi-timeframe supply and demand research dashboard",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080d18",
+  "theme_color": "#080d18",
+  "icons": [{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
