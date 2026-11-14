@@ -35,7 +35,10 @@ main{max-width:1100px;margin:auto}.hero{background:linear-gradient(135deg,#13223
 const SYMBOL='R_75',URL='wss://api.derivws.com/trading/v1/options/ws/public';
 const TFS=[['W1',604800],['D1',86400],['H4',14400],['H1',3600],['M30',1800],['M15',900],['M5',300],['M1',60]];
 let ws=null,req=1,price=null,candles={},zones=[],lastTickAt=0,historyLoaded=0,requestTf={},alertsEnabled=false,lastAlertKey='',lastPersist=0;
-const $=id=>document.getElementById(id),fmt=n=>Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),key=(tf,t)=>tf+'-'+t;\nfunction loadResearch(){try{const d=JSON.parse(localStorage.getItem('pfls-zoneflow-research-v2')||'null');if(d&&Array.isArray(d.zones))zones=d.zones.slice(-600).filter(z=>z&&z.id&&z.tf&&['DEMAND','SUPPLY'].includes(z.type));}catch(e){zones=[]}}\nfunction saveResearch(){try{localStorage.setItem('pfls-zoneflow-research-v2',JSON.stringify({version:2,savedAt:Date.now(),zones:zones.slice(-600)}));lastPersist=Date.now();}catch(e){}}\nloadResearch();
+const $=id=>document.getElementById(id),fmt=n=>Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),key=(tf,t)=>tf+'-'+t;
+function loadResearch(){try{const d=JSON.parse(localStorage.getItem('pfls-zoneflow-research-v2')||'null');if(d&&Array.isArray(d.zones))zones=d.zones.slice(-600).filter(z=>z&&z.id&&z.tf&&['DEMAND','SUPPLY'].includes(z.type));}catch(e){zones=[]}}
+function saveResearch(){try{localStorage.setItem('pfls-zoneflow-research-v2',JSON.stringify({version:2,savedAt:Date.now(),zones:zones.slice(-600)}));lastPersist=Date.now();}catch(e){}}
+loadResearch();
 function setStatus(s,live=false){$('connection').textContent='● '+s;$('connection').classList.toggle('live',live);$('connection').setAttribute('aria-label',s)}
 function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
 let reconnectTimer=null,connectionTimer=null,responseTimer=null,feedStarted=false;
@@ -68,7 +71,8 @@ $('decision').textContent=below.length||above.length?'WAIT · AWAIT PRICE ACTION
 $('feedState').textContent=historyLoaded+'/'+TFS.length+' TF HISTORIES · RESEARCH';
 }
 $('refreshBtn').onclick=()=>{if(ws&&ws.readyState===1){historyLoaded=0;feedStarted=false;requestMarketData()}else connect()};
-$('showAllBtn').onclick=()=>{$('allZones').scrollIntoView({behavior:'smooth',block:'start'})};\n$('alertsBtn').onclick=async()=>{if(!('Notification'in window)){$('feedState').textContent='Notifications are not supported in this browser.';return}try{const p=await Notification.requestPermission();alertsEnabled=p==='granted';$('alertsBtn').textContent=alertsEnabled?'ZONE ALERTS ENABLED':'ENABLE ZONE ALERTS';$('feedState').textContent=alertsEnabled?'Zone approach notifications enabled.':'Notification permission was not granted.';}catch(e){$('feedState').textContent='Could not enable notifications: '+e.message}};
+$('showAllBtn').onclick=()=>{$('allZones').scrollIntoView({behavior:'smooth',block:'start'})};
+$('alertsBtn').onclick=async()=>{if(!('Notification'in window)){$('feedState').textContent='Notifications are not supported in this browser.';return}try{const p=await Notification.requestPermission();alertsEnabled=p==='granted';$('alertsBtn').textContent=alertsEnabled?'ZONE ALERTS ENABLED':'ENABLE ZONE ALERTS';$('feedState').textContent=alertsEnabled?'Zone approach notifications enabled.':'Notification permission was not granted.';}catch(e){$('feedState').textContent='Could not enable notifications: '+e.message}};
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 connect();
 })();
